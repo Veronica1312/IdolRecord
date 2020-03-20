@@ -1,0 +1,197 @@
+import tkinter as tk
+import os
+
+char_font='SimHei'
+
+def Create_idol():       
+    def Submit_edition():        
+        idol_name = var_idol_name.get()
+        idol_birthday = var_idol_birthday.get()  
+        
+        if os.path.exists('idol.txt'):
+            with open('idol.txt','r') as f:
+                idol_file=f.read()
+                if idol_file!='':
+                    idol_file=eval(idol_file)
+                    idol_file=idol_file+[[idol_name,idol_birthday]]
+                else:
+                    idol_file=[[idol_name,idol_birthday]]
+        else:
+            with open("idol.txt",'w') as f:
+                print("无文件，创建成功！")
+                idol_file=''
+                idol_file=[[idol_name,idol_birthday]]
+
+        with open("idol.txt","w") as f:
+            f.write(str(idol_file))
+        create_window.destroy()
+
+    create_window = tk.Toplevel(root)
+    create_window.geometry('500x300')
+    create_window.title('新建爱豆')
+        
+    tk.Label(create_window, text='爱豆姓名：').place(x=10, y=10)
+    var_idol_name = tk.StringVar()  # 将输入的注册名赋值给变量
+    var_idol_name.set('王老师')
+    idol_name_input = tk.Entry(create_window,textvariable=var_idol_name, show=None, font=(char_font, 14)) # textvariable=idol_name,
+    idol_name_input.place(x=100,y=10)
+    
+    tk.Label(create_window, text='生日：').place(x=10, y=38)
+    var_idol_birthday = tk.StringVar() 
+    idol_birthday_input = tk.Entry(create_window,textvariable=var_idol_birthday, show=None, font=(char_font, 14)) # textvariable=idol_name,
+    idol_birthday_input.place(x=100,y=40)
+
+    submit_bt = tk.Button(create_window, text='确定', font=('Arial', 12), width=10, height=2, command=Submit_edition)
+    submit_bt.place(x=100,y=100)
+
+def Search_idol():
+    if os.path.exists('idol.txt'):
+        with open('idol.txt','r') as f:
+            all_files=f.read()
+            if all_files!='':
+                files=eval(all_files)
+            else:
+                files=[]
+    else:
+        with open("idol.txt",'w') as f:
+            print("文件创建成功！")
+            files=[]
+
+    search_window = tk.Toplevel(root)
+    search_window.geometry('500x300')
+    search_window.title('查找爱豆')
+    
+    tk.Label(search_window, text='爱豆名单:').place(x=10, y=10)    
+
+    idol_list = tk.Listbox(search_window)#, listvariable=((1,2))
+
+    try:
+        for item in files:
+            idol_list.insert(0,item[0])
+        idol_list.place(x=50,y=50)
+    except AttributeError:
+        tk.Label(search_window, text='当前无爱豆，请先创建。').place(x=50, y=10)  
+    
+    def Details():
+        idol_index_dec=int(str(idol_list.curselection()).split(',')[0][1:])
+        idol_index_asc=len(files)-1-idol_index_dec
+
+        def New_Comment():        
+            def Submit_comment():           
+                works_name=var_works_name.get()
+                works_time=var_works_time.get()
+                comment=works_comment_input.get('1.0','end')               
+                all_comment=[works_name,works_time,comment]          
+                files[idol_index_asc]=files[idol_index_asc]+[all_comment]               
+                with open("idol.txt","w") as f:
+                    f.write(str(files))
+                    
+                new_comment_window.destroy()
+                details_window.destroy()
+            
+            new_comment_window = tk.Toplevel(root)
+            new_comment_window.geometry('500x400')
+            new_comment_window.title('添加影评')   
+    
+            tk.Label(new_comment_window, text='作品名称:').place(x=10, y=10) 
+            var_works_name = tk.StringVar()  # 将输入的注册名赋值给变量
+            works_name_input = tk.Entry(new_comment_window,textvariable=var_works_name, show=None, font=(char_font, 14)) # textvariable=idol_name,
+            works_name_input.place(x=100,y=10)    
+    
+            tk.Label(new_comment_window, text='发布时间:').place(x=10, y=35)
+            var_works_time = tk.StringVar() 
+            works_time_input = tk.Entry(new_comment_window,textvariable=var_works_time, show=None, font=(char_font, 14)) # textvariable=idol_name,
+            works_time_input.place(x=100,y=40)    
+    
+            tk.Label(new_comment_window, text='作品评论:').place(x=10, y=60)
+            var_works_comment = tk.StringVar() 
+            works_comment_input = tk.Text(new_comment_window,font=(char_font, 12) ,width=40, height=10) # textvariable=idol_name,
+            works_comment_input.place(x=100,y=70)     
+            submit_bt = tk.Button(new_comment_window, text='确定', font=(char_font, 12), width=10, height=2, command=Submit_comment)
+            submit_bt.place(x=100,y=300)  
+                
+        def View_Comment():          
+            def Edit_Comment():
+                comment=comment_text.get('1.0','end')               
+                files[idol_index_asc][works_index_asc+2][2]=comment             
+                with open("idol.txt","w") as f:
+                    f.write(str(files))   
+                view_comment_window.destroy()
+                
+            works_index_dec=int(str(works_list.curselection()).split(',')[0][1:])
+            works_index_asc=len(files[idol_index_asc])-3-works_index_dec
+            
+            view_comment_window = tk.Toplevel(root)
+            view_comment_window.geometry('500x400')
+            view_comment_window.title('查看影评')   
+            tk.Label(view_comment_window, text='作品名称：'+files[idol_index_asc][works_index_asc+2][0]).place(x=10, y=20)
+            tk.Label(view_comment_window, text='时间：'+files[idol_index_asc][works_index_asc+2][1]).place(x=10, y=40)
+            tk.Label(view_comment_window, text='作品评论：').place(x=10, y=60)
+            comment_text=tk.Text(view_comment_window,width=50, height=15,font=(char_font, 12))
+            comment_text.insert(tk.INSERT,files[idol_index_asc][works_index_asc+2][2])
+            comment_text.place(x=15, y=80)
+            
+            edit_bt = tk.Button(view_comment_window, text='编辑', font=(char_font, 12), width=5, height=2, command=Edit_Comment)
+            edit_bt.place(x=400,y=20)  
+            
+        
+        def Delete_Comment(): 
+            works_index_dec=int(str(works_list.curselection()).split(',')[0][1:])
+            works_index_asc=len(files[idol_index_asc])-3-works_index_dec
+            
+            del files[idol_index_asc][works_index_asc+2]
+            with open("idol.txt","w") as f:
+                f.write(str(files))            
+            
+            details_window.destroy()
+            
+        details_window = tk.Toplevel(root)
+        details_window.geometry('500x400')
+        details_window.title('爱豆详情')
+        tk.Label(details_window, text='爱豆姓名：'+files[idol_index_asc][0]).place(x=50, y=10) 
+        tk.Label(details_window, text='爱豆生日：'+files[idol_index_asc][1]).place(x=50, y=30) 
+        
+        
+        new_comment_bt = tk.Button(details_window, text='新建影评', font=(char_font, 12), width=10, height=2, command=New_Comment)
+        new_comment_bt.place(x=350,y=50)
+        
+        if len(files[idol_index_asc])>=3:
+            view_comment_bt = tk.Button(details_window, text='查看影评', font=(char_font, 12), width=10, height=2, command=View_Comment)
+            view_comment_bt.place(x=350,y=120)
+         
+            delete_bt = tk.Button(details_window, text='删除影评', font=(char_font, 12), width=10, height=2, command=Delete_Comment)
+            delete_bt.place(x=350,y=190)
+                 
+        
+        works_list = tk.Listbox(details_window)#, listvariable=((1,2))
+        
+        try:
+            for item in files[idol_index_asc][2:]:
+                if item!=[]:
+                    works_list.insert(0,item[0])
+                    works_list.place(x=50,y=60)
+                else:
+                    tk.Label(details_window, text='当前爱豆无作品，请先添加。').place(x=50, y=10) 
+                    
+        except AttributeError:
+            tk.Label(details_window, text='当前爱豆无作品，请先添加。').place(x=50, y=10)  
+                    
+        
+    details_bt = tk.Button(search_window, text='查看详情', font=(char_font, 12), width=10, height=2, command=Details)
+    details_bt.place(x=350,y=220)
+    
+
+root = tk.Tk()          
+root.title('爱豆记录')  #显示标题栏内容
+root.geometry('500x400')  #定义分辨率
+
+var = tk.StringVar() 
+create_idol_bt = tk.Button(root, text='新建爱豆', font=(char_font, 15), width=10, height=2, command=Create_idol)
+create_idol_bt.place(x=400,y=100)
+create_idol_bt.pack()
+
+search_idol_bt = tk.Button(root, text='查找爱豆', font=(char_font, 15), width=10, height=2, command=Search_idol)
+search_idol_bt.place(x=400,y=200)
+search_idol_bt.pack()
+
+root.mainloop()
